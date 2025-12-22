@@ -210,17 +210,6 @@ pub enum MyError {
             ],
             mcp: vec![
                 McpTool {
-                    name: "cargo".to_string(),
-                    command: "cargo".to_string(),
-                    args: vec![],
-                    env: {
-                        let mut env = HashMap::new();
-                        env.insert("RUST_BACKTRACE".to_string(), "1".to_string());
-                        env
-                    },
-                    setup_url: None,
-                },
-                McpTool {
                     name: "context7".to_string(),
                     command: "npx".to_string(),
                     args: vec!["-y".to_string(), "@upstash/context7-mcp".to_string()],
@@ -308,13 +297,6 @@ export async function createUser(formData: FormData) {
                 },
             ],
             mcp: vec![
-                McpTool {
-                    name: "npm".to_string(),
-                    command: "npm".to_string(),
-                    args: vec![],
-                    env: HashMap::new(),
-                    setup_url: None,
-                },
                 McpTool {
                     name: "context7".to_string(),
                     command: "npx".to_string(),
@@ -404,13 +386,6 @@ export class LoginPage {
                 },
             ],
             mcp: vec![
-                McpTool {
-                    name: "npx".to_string(),
-                    command: "npx".to_string(),
-                    args: vec!["playwright".to_string(), "test".to_string()],
-                    env: HashMap::new(),
-                    setup_url: None,
-                },
                 McpTool {
                     name: "context7".to_string(),
                     command: "npx".to_string(),
