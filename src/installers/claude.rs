@@ -38,9 +38,11 @@ impl ClaudeInstaller {
         Ok(self.get_base_dir()?.join("agents"))
     }
 
-    /// Get the Claude Desktop config path
-    fn get_desktop_config_path(&self) -> Result<PathBuf> {
-        Ok(self.get_base_dir()?.join("claude_desktop_config.json"))
+    /// Get the Claude Code config path (~/.claude.json for MCP servers)
+    fn get_mcp_config_path(&self) -> Result<PathBuf> {
+        let home = dirs::home_dir()
+            .context("Could not find home directory")?;
+        Ok(home.join(".claude.json"))
     }
 
     /// Generate the markdown content with YAML frontmatter
@@ -106,8 +108,7 @@ impl Installer for ClaudeInstaller {
         }
 
         let base_dir = self.get_base_dir()?;
-        // Skills go in ~/.claude/agents/../skills which effectively is ~/.claude/skills
-        // if we assume get_base_dir returns ~/.claude
+        // Skills go in ~/.claude/skills
         let skills_dir = base_dir.join("skills");
         fs::create_dir_all(&skills_dir)?;
 
@@ -124,7 +125,7 @@ impl Installer for ClaudeInstaller {
             return Ok(());
         }
 
-        let config_path = self.get_desktop_config_path()?;
+        let config_path = self.get_mcp_config_path()?;
 
         // Load existing config or create new one
         let mut config: Value = if config_path.exists() {
@@ -141,7 +142,9 @@ impl Installer for ClaudeInstaller {
 
         // Add each MCP tool
         for tool in &agent.mcp {
+            // Claude Code uses "type": "stdio" format
             let tool_config = json!({
+                "type": "stdio",
                 "command": tool.command,
                 "args": tool.args,
                 "env": tool.env
@@ -153,11 +156,6 @@ impl Installer for ClaudeInstaller {
                 println!("\n  {} Setup required for MCP tool '{}'", "ℹ".blue().bold(), tool.name.bold());
                 println!("  {} Get your API key here: {}", "→".cyan(), url.underline().blue());
             }
-        }
-
-        // Ensure parent directory exists
-        if let Some(parent) = config_path.parent() {
-            fs::create_dir_all(parent)?;
         }
 
         // Write the updated config
