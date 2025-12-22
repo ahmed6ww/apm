@@ -84,6 +84,15 @@ pub async fn execute(agent_name: &str, target: TargetArg, global: bool) -> Resul
             "✓".green(),
             agent.mcp.len()
         ));
+
+        // Print setup URLs for MCPs that require API keys
+        for tool in &agent.mcp {
+            if let Some(url) = &tool.setup_url {
+                println!();
+                println!("  {} Setup required for MCP tool '{}'", "ℹ".blue().bold(), tool.name.bold());
+                println!("  {} Get your API key here: {}", "→".cyan(), url.underline().blue());
+            }
+        }
     }
 
     // Success message
