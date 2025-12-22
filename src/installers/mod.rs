@@ -4,11 +4,13 @@
 
 mod claude;
 mod cursor;
+mod codex;
 
 use anyhow::Result;
 
 pub use claude::ClaudeInstaller;
 pub use cursor::CursorInstaller;
+pub use codex::CodexInstaller;
 
 use crate::core::agent::AgentConfig;
 
@@ -17,6 +19,7 @@ use crate::core::agent::AgentConfig;
 pub enum Target {
     Claude,
     Cursor,
+    Codex,
 }
 
 impl Target {
@@ -25,6 +28,7 @@ impl Target {
         match self {
             Target::Claude => "Claude Code",
             Target::Cursor => "Cursor",
+            Target::Codex => "Codex",
         }
     }
 }
@@ -49,5 +53,6 @@ pub fn get_installer(target: Target, global: bool) -> Box<dyn Installer> {
     match target {
         Target::Claude => Box::new(ClaudeInstaller::new(global)),
         Target::Cursor => Box::new(CursorInstaller::new(global)),
+        Target::Codex => Box::new(CodexInstaller::new(global)),
     }
 }

@@ -73,6 +73,10 @@ pub struct McpTool {
     /// Environment variables
     #[serde(default)]
     pub env: HashMap<String, String>,
+
+    /// Optional URL for setup instructions (e.g. API key generation)
+    #[serde(default)]
+    pub setup_url: Option<String>,
 }
 
 /// Minimal agent info for registry listing

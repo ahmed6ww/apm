@@ -105,6 +105,10 @@ pub async fn execute(agent_name: &str, target: TargetArg, global: bool) -> Resul
             println!("    1. Restart Cursor to load the new rules");
             println!("    2. The agent context will be available in Composer");
         }
+        Target::Codex => {
+            println!("    1. Restart Codex to load the new agent");
+            println!("    2. The agent will be available in your conversations");
+        }
     }
 
     Ok(())

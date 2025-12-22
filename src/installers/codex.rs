@@ -1,10 +1,11 @@
-//! Claude Code Installer
+//! Codex Installer
 //!
-//! Installs agent configurations into Claude Code's native format.
+//! Installs agent configurations into Codex's native format.
 //!
 //! Output structure:
-//! - ~/.claude/agents/{name}.md - Agent as Markdown with YAML frontmatter
-//! - claude_desktop_config.json - MCP tool configuration
+//! - ~/.codex/agents/{name}.md - Agent as Markdown with YAML frontmatter
+//! - ~/.codex/skills/{name}/{skill}.md - Skills as Markdown files
+//! - ~/.codex/config.json - MCP tool configuration (assumed)
 
 use anyhow::{Context, Result};
 use serde_json::{json, Value};
@@ -16,21 +17,21 @@ use super::Installer;
 use crate::core::agent::AgentConfig;
 use crate::utils::paths;
 
-/// Installer for Claude Code
-pub struct ClaudeInstaller {
+/// Installer for Codex
+pub struct CodexInstaller {
     /// Whether to install globally
     global: bool,
 }
 
-impl ClaudeInstaller {
+impl CodexInstaller {
     pub fn new(global: bool) -> Self {
         Self { global }
     }
 
-    /// Get the base directory for Claude configuration
+    /// Get the base directory for Codex configuration
     fn get_base_dir(&self) -> Result<PathBuf> {
-        paths::claude_config_dir()
-            .context("Could not find Claude configuration directory")
+        paths::codex_config_dir()
+            .context("Could not find Codex configuration directory")
     }
 
     /// Get the agents directory
@@ -38,37 +39,16 @@ impl ClaudeInstaller {
         Ok(self.get_base_dir()?.join("agents"))
     }
 
-    /// Get the Claude Desktop config path
-    fn get_desktop_config_path(&self) -> Result<PathBuf> {
-        Ok(self.get_base_dir()?.join("claude_desktop_config.json"))
+    /// Get the Codex config path (assumed)
+    fn get_config_path(&self) -> Result<PathBuf> {
+        Ok(self.get_base_dir()?.join("config.json"))
     }
 
     /// Generate the markdown content with YAML frontmatter
     fn generate_agent_markdown(agent: &AgentConfig) -> String {
         let icon = agent.identity.icon.as_deref().unwrap_or("🤖");
-        let model = agent.identity.model.as_deref().unwrap_or("sonnet");
+        let model = agent.identity.model.as_deref().unwrap_or("gpt-4o");
         
-        // Extract just the model name (e.g., "sonnet" from "claude-3-5-sonnet-latest")
-        let model_short = if model.contains("sonnet") {
-            "sonnet"
-        } else if model.contains("opus") {
-            "opus"
-        } else if model.contains("haiku") {
-            "haiku"
-        } else {
-            model
-        };
-
-        // Build skills section if present
-        let skills_section = if !agent.skills.is_empty() {
-            let skills_content: String = agent.skills.iter()
-                .map(|s| format!("\n## {}\n\n{}", s.name, s.content))
-                .collect();
-            format!("\n\n---\n# Knowledge Base\n{}", skills_content)
-        } else {
-            String::new()
-        };
-
         format!(
             r#"---
 name: {}
@@ -77,24 +57,22 @@ model: {}
 icon: {}
 ---
 
-{}
 {}"#,
             agent.name,
             agent.description,
-            model_short,
+            model,
             icon,
-            agent.identity.system_prompt,
-            skills_section
+            agent.identity.system_prompt
         )
     }
 }
 
-impl Installer for ClaudeInstaller {
+impl Installer for CodexInstaller {
     fn install_identity(&self, agent: &AgentConfig) -> Result<()> {
         let agents_dir = self.get_agents_dir()?;
         fs::create_dir_all(&agents_dir)?;
 
-        // Create the agent markdown file (Claude Code format)
+        // Create the agent markdown file
         let agent_file = agents_dir.join(format!("{}.md", agent.name));
         let markdown_content = Self::generate_agent_markdown(agent);
         
@@ -125,7 +103,7 @@ impl Installer for ClaudeInstaller {
             return Ok(());
         }
 
-        let config_path = self.get_desktop_config_path()?;
+        let config_path = self.get_config_path()?;
 
         // Load existing config or create new one
         let mut config: Value = if config_path.exists() {
@@ -180,9 +158,6 @@ impl Installer for ClaudeInstaller {
             fs::remove_dir_all(&skills_dir)?;
         }
 
-        // Note: MCP tools are not removed as they might be used by other agents
-
         Ok(())
     }
 }
-

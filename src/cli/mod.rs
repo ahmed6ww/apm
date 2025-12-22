@@ -12,7 +12,7 @@ use crate::installers::Target;
 #[derive(Parser, Debug)]
 #[command(name = "ax")]
 #[command(author = "ahmed6ww")]
-#[command(version = "1.1.0")]
+#[command(version = "1.2.0")]
 #[command(about = "Write Once, Run on Claude, Cursor, or Codex", long_about = None)]
 #[command(propagate_version = true)]
 pub struct Cli {
@@ -47,6 +47,7 @@ pub enum Commands {
 pub enum TargetArg {
     Claude,
     Cursor,
+    Codex,
 }
 
 impl From<TargetArg> for Target {
@@ -54,6 +55,7 @@ impl From<TargetArg> for Target {
         match arg {
             TargetArg::Claude => Target::Claude,
             TargetArg::Cursor => Target::Cursor,
+            TargetArg::Codex => Target::Codex,
         }
     }
 }

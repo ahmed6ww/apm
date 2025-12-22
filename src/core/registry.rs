@@ -218,6 +218,7 @@ pub enum MyError {
                         env.insert("RUST_BACKTRACE".to_string(), "1".to_string());
                         env
                     },
+                    setup_url: None,
                 },
             ],
         }
@@ -301,6 +302,7 @@ export async function createUser(formData: FormData) {
                     command: "npm".to_string(),
                     args: vec![],
                     env: HashMap::new(),
+                    setup_url: None,
                 },
             ],
         }
@@ -385,6 +387,7 @@ export class LoginPage {
                     command: "npx".to_string(),
                     args: vec!["playwright".to_string(), "test".to_string()],
                     env: HashMap::new(),
+                    setup_url: None,
                 },
             ],
         }

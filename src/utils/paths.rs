@@ -99,3 +99,37 @@ pub fn vscode_config_dir() -> Option<PathBuf> {
         None
     }
 }
+
+/// Get the Codex configuration directory
+///
+/// On macOS: ~/Library/Application Support/Codex
+/// On Linux: ~/.config/codex or ~/.codex
+/// On Windows: %APPDATA%/Codex
+pub fn codex_config_dir() -> Option<PathBuf> {
+    #[cfg(target_os = "macos")]
+    {
+        dirs::home_dir().map(|h| h.join("Library/Application Support/Codex"))
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Try XDG config first, then fallback to ~/.codex
+        if let Some(config) = dirs::config_dir() {
+            let codex_dir = config.join("codex");
+            if codex_dir.exists() {
+                return Some(codex_dir);
+            }
+        }
+        dirs::home_dir().map(|h| h.join(".codex"))
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        dirs::config_dir().map(|d| d.join("Codex"))
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+    {
+        dirs::home_dir().map(|h| h.join(".codex"))
+    }
+}
