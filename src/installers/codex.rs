@@ -106,9 +106,71 @@ impl Installer for CodexInstaller {
         Ok(())
     }
 
-    fn install_tools(&self, _agent: &AgentConfig) -> Result<()> {
-        // Codex doesn't support MCP tools in the same way.
-        // MCPs are not part of the Codex skill system.
+    fn install_tools(&self, agent: &AgentConfig) -> Result<()> {
+        if agent.mcp.is_empty() {
+            return Ok(());
+        }
+
+        let config_path = self.get_base_dir()?.join("config.toml");
+        
+        // Ensure parent directory exists
+        if let Some(parent) = config_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        // Read existing config or create new
+        let mut existing_content = if config_path.exists() {
+            fs::read_to_string(&config_path)?
+        } else {
+            String::new()
+        };
+
+        // Append MCP server configurations
+        // Format per Codex docs:
+        // [mcp_servers.<name>]
+        // command = "..."
+        // args = ["...", "..."]
+        // [mcp_servers.<name>.env]
+        // VAR = "value"
+        for tool in &agent.mcp {
+            // Check if this server already exists
+            let server_header = format!("[mcp_servers.{}]", tool.name);
+            if existing_content.contains(&server_header) {
+                // Skip if already configured
+                continue;
+            }
+
+            // Build the TOML section
+            let mut section = format!("\n{}\n", server_header);
+            section.push_str(&format!("command = \"{}\"\n", tool.command));
+            
+            if !tool.args.is_empty() {
+                let args_str: Vec<String> = tool.args.iter()
+                    .map(|a| format!("\"{}\"", a))
+                    .collect();
+                section.push_str(&format!("args = [{}]\n", args_str.join(", ")));
+            }
+            
+            if !tool.env.is_empty() {
+                section.push_str(&format!("\n[mcp_servers.{}.env]\n", tool.name));
+                for (key, value) in &tool.env {
+                    section.push_str(&format!("{} = \"{}\"\n", key, value));
+                }
+            }
+
+            existing_content.push_str(&section);
+
+            // Show setup URL if present
+            if let Some(url) = &tool.setup_url {
+                use colored::Colorize;
+                println!("\n  {} Setup required for MCP tool '{}'", "ℹ".blue().bold(), tool.name.bold());
+                println!("  {} Get your API key here: {}", "→".cyan(), url.underline().blue());
+            }
+        }
+
+        // Write the updated config
+        fs::write(&config_path, existing_content)?;
+
         Ok(())
     }
 
