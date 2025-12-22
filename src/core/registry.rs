@@ -220,6 +220,17 @@ pub enum MyError {
                     },
                     setup_url: None,
                 },
+                McpTool {
+                    name: "context7".to_string(),
+                    command: "npx".to_string(),
+                    args: vec!["-y".to_string(), "@upstash/context7-mcp".to_string()],
+                    env: {
+                        let mut env = HashMap::new();
+                        env.insert("CONTEXT7_API_KEY".to_string(), "${CONTEXT7_API_KEY}".to_string());
+                        env
+                    },
+                    setup_url: Some("https://context7.com/dashboard".to_string()),
+                },
             ],
         }
     }
@@ -303,6 +314,17 @@ export async function createUser(formData: FormData) {
                     args: vec![],
                     env: HashMap::new(),
                     setup_url: None,
+                },
+                McpTool {
+                    name: "context7".to_string(),
+                    command: "npx".to_string(),
+                    args: vec!["-y".to_string(), "@upstash/context7-mcp".to_string()],
+                    env: {
+                        let mut env = HashMap::new();
+                        env.insert("CONTEXT7_API_KEY".to_string(), "${CONTEXT7_API_KEY}".to_string());
+                        env
+                    },
+                    setup_url: Some("https://context7.com/dashboard".to_string()),
                 },
             ],
         }
@@ -388,6 +410,17 @@ export class LoginPage {
                     args: vec!["playwright".to_string(), "test".to_string()],
                     env: HashMap::new(),
                     setup_url: None,
+                },
+                McpTool {
+                    name: "context7".to_string(),
+                    command: "npx".to_string(),
+                    args: vec!["-y".to_string(), "@upstash/context7-mcp".to_string()],
+                    env: {
+                        let mut env = HashMap::new();
+                        env.insert("CONTEXT7_API_KEY".to_string(), "${CONTEXT7_API_KEY}".to_string());
+                        env
+                    },
+                    setup_url: Some("https://context7.com/dashboard".to_string()),
                 },
             ],
         }
